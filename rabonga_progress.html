@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RABONGA PROGRESS REPORT</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(135deg, #2980b9, #2c3e50);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .card h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .progress-bar {
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 20px;
+      margin: 10px 0;
+    }
+    .progress {
+      background: #3498db;
+      height: 100%;
+      width: 0%;
+      text-align: center;
+      color: #fff;
+      font-size: 12px;
+      line-height: 20px;
+      transition: width 0.4s ease;
+    }
+    .checklist label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    .checklist input {
+      margin-right: 10px;
+    }
+    .notes textarea {
+      width: 100%;
+      height: 120px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 14px;
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+  <header>RABONGA PROGRESS REPORT</header>
+
+  <div class="dashboard">
+    <div class="card">
+      <h3><i class="fa-solid fa-chart-pie"></i> Overall Progress</h3>
+      <canvas id="overallChart" height="200"></canvas>
+    </div>
+
+    <div class="card">
+      <h3><i class="fa-solid fa-book"></i> Subjects Progress</h3>
+      <p>Math</p>
+      <div class="progress-bar"><div id="mathProgress" class="progress">0%</div></div>
+      <p>Science</p>
+      <div class="progress-bar"><div id="scienceProgress" class="progress">0%</div></div>
+      <p>English</p>
+      <div class="progress-bar"><div id="englishProgress" class="progress">0%</div></div>
+    </div>
+
+    <div class="card checklist">
+      <h3><i class="fa-solid fa-list-check"></i> Checklist</h3>
+      <label><input type="checkbox" class="task"> Review Math Chapter 1</label>
+      <label><input type="checkbox" class="task"> Review Science Notes</label>
+      <label><input type="checkbox" class="task"> Practice English Essay</label>
+    </div>
+
+    <div class="card notes">
+      <h3><i class="fa-solid fa-pen-to-square"></i> Notes</h3>
+      <textarea placeholder="Write your notes here..."></textarea>
+    </div>
+
+    <div class="card">
+      <h3><i class="fa-solid fa-chart-line"></i> Daily Progress</h3>
+      <canvas id="dailyChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const tasks = document.querySelectorAll('.task');
+    const mathProgress = document.getElementById('mathProgress');
+    const scienceProgress = document.getElementById('scienceProgress');
+    const englishProgress = document.getElementById('englishProgress');
+
+    // Chart.js Setup for Overall Progress
+    const ctx = document.getElementById('overallChart').getContext('2d');
+    const overallChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Completed', 'Remaining'],
+        datasets: [{
+          data: [0, 100],
+          backgroundColor: ['#3498db', '#e0e0e0'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    // Chart.js Setup for Daily Progress
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    const dailyChart = new Chart(dailyCtx, {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Daily Progress %',
+          data: [],
+          backgroundColor: '#3498db'
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    });
+
+    function updateProgress() {
+      let completed = 0;
+      tasks.forEach(task => {
+        if (task.checked) completed++;
+      });
+      let percent = Math.round((completed / tasks.length) * 100);
+
+      // Update doughnut chart
+      overallChart.data.datasets[0].data = [percent, 100 - percent];
+      overallChart.update();
+
+      // Update subject bars
+      mathProgress.style.width = (tasks[0].checked ? '100%' : '0%');
+      mathProgress.textContent = tasks[0].checked ? '100%' : '0%';
+      scienceProgress.style.width = (tasks[1].checked ? '100%' : '0%');
+      scienceProgress.textContent = tasks[1].checked ? '100%' : '0%';
+      englishProgress.style.width = (tasks[2].checked ? '100%' : '0%');
+      englishProgress.textContent = tasks[2].checked ? '100%' : '0%';
+
+      // Update daily chart with today's date
+      const today = new Date().toLocaleDateString();
+      const index = dailyChart.data.labels.indexOf(today);
+      if (index === -1) {
+        dailyChart.data.labels.push(today);
+        dailyChart.data.datasets[0].data.push(percent);
+      } else {
+        dailyChart.data.datasets[0].data[index] = percent;
+      }
+      dailyChart.update();
+    }
+
+    tasks.forEach(task => task.addEventListener('change', updateProgress));
+  </script>
+</body>
+</html>
